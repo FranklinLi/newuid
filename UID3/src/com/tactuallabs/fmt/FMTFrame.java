@@ -8,8 +8,8 @@ import java.util.List;
 public class FMTFrame {
 	static long MAX_SIGNAL = 100000; //10000000
 	static int MAX_TOUCH_STRENGTH = 4;
-	static int TOUCH_THRESHOLD_1 = 3200000; // TODO adjust this value inteligently
-	static int TOUCH_THRESHOLD_2 = 3000000;
+	static int TOUCH_THRESHOLD_1 = 3600000; // TODO adjust this value inteligently
+	static int TOUCH_THRESHOLD_2 = 3400000;
 //	static int TOUCH_THRESHOLD_1 = 1200000;
 //	static int TOUCH_THRESHOLD_2 = 800000;	
 	static final int NUM_COLS = 40;

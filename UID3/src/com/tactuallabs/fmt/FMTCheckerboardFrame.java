@@ -3,6 +3,7 @@
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -20,7 +21,10 @@ import java.io.PrintWriter;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.Timer;
+import javax.swing.JScrollPane;
 
 import com.aliasi.cluster.CompleteLinkClusterer;
 import com.aliasi.cluster.Dendrogram;
@@ -37,7 +41,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import java.awt.image.BufferStrategy;
 
 public class FMTCheckerboardFrame extends JFrame implements ActionListener,
@@ -70,8 +73,8 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	ArrayList<SavedPositionData> arrayListWhite = new ArrayList<SavedPositionData>();
 	// abc.add(new SavedPositionData());
 	
-	
 	private static final long serialVersionUID = 1999858798127882197L;
+	protected static final int FRAME_FIXED_WIDTH = 2000;
 	protected static final int FRAME_WIDTH = 1024;
 	protected static final int FRAME_HEIGHT = 768;
 	Panel panel;
@@ -118,9 +121,9 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	public void drawRect(Graphics g, int xInd, int yInd, Color inColor,
 			boolean fill) {
 
-		cellWidth = 50 *(float) m_TouchFrameAve.getSignalStrength(xInd,
-				yInd) / FMTFrame.MAX_SIGNAL;
-		cellHeight = cellWidth;
+		//cellWidth = 50 *(float) m_TouchFrameAve.getSignalStrength(xInd,
+		//		yInd) / FMTFrame.MAX_SIGNAL;
+		//cellHeight = cellWidth;
 		int xpos = (int) (xInd * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
 		int ypos = (int) (yInd * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS);
 		g.setColor(inColor);
@@ -135,6 +138,66 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 
 	}
 	
+	public void fillPolygon(Graphics g,int[] xPoints, int[] yPoints, int nPoints, Color inColor){
+		int[] xpos = new int[nPoints];
+		int[] ypos = new int[nPoints];
+		for (int i = 0; i < nPoints; i++){
+			xpos[i] = (int) (xPoints[i] * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
+			ypos[i] = FRAME_HEIGHT - (int) (yPoints[i] * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS)  - (int) cellHeight;
+		}
+		g.setColor(inColor);
+		g.fillPolygon(xpos, ypos, nPoints);
+		
+	}
+
+	public void drawStringGroupID(Graphics g, int number, int xInd, int yInd, Color color, int size){
+		int xpos = (int) (xInd * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
+		int ypos = (int) (yInd * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS);
+		g.setColor(color);
+		String my_String = "GroupID: " + Integer.toString(number);
+		g.setFont(new Font("TimesRoman", Font.PLAIN, size)); 
+		g.drawString(my_String, xpos, FRAME_HEIGHT - ypos - (int) cellHeight);
+	}
+	
+	
+	
+	public void drawString(Graphics g, long number, int xInd, int yInd, Color color, int size){
+		int xpos = (int) (xInd * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
+		int ypos = (int) (yInd * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS);
+		g.setColor(color);
+		String my_String = "Strength: " + Long.toString(number);
+		g.setFont(new Font("TimesRoman", Font.PLAIN, size)); 
+		g.drawString(my_String, xpos, FRAME_HEIGHT - ypos - (int) cellHeight);
+	}
+	
+	public void drawStringBlob(Graphics g, long number, int xInd, int yInd, Color color, int size, int blob, int xcen, int ycen){
+		int xpos = (int) (xInd * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
+		int ypos = (int) (yInd * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS);
+		int xpos1 = (int) (xcen * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
+		int ypos1 = (int) (ycen * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS);
+		g.setColor(color);
+		int yposition = FRAME_HEIGHT - ypos1 - (int) cellHeight;
+		String my_String = Long.toString(number);
+		String x_String = Integer.toString(xpos1);
+		String y_String = Integer.toString(yposition);
+		String blob_String = "Blob " + Integer.toString(blob) + ": " ;
+		g.setFont(new Font("TimesRoman", Font.PLAIN, size)); 
+		g.drawString(blob_String + "(" + x_String + ", " + y_String + ") STRENGTH: " +  my_String, xpos, FRAME_HEIGHT - ypos - (int) cellHeight);
+	}
+	public void drawStringGhost(Graphics g, long number, int xInd, int yInd, Color color, int size, int Ghost, int xcen, int ycen){
+		int xpos = (int) (xInd * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
+		int ypos = (int) (yInd * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS);
+		int xpos1 = (int) (xcen * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
+		int ypos1 = (int) (ycen * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS);
+		g.setColor(color);
+		int yposition = FRAME_HEIGHT - ypos1 - (int) cellHeight;
+		String my_String = Long.toString(number);
+		String x_String = Integer.toString(xpos1);
+		String y_String = Integer.toString(yposition);
+		String Ghost_String = "Ghost " + Integer.toString(Ghost) + ": " ;
+		g.setFont(new Font("TimesRoman", Font.PLAIN, size)); 
+		g.drawString(Ghost_String + "(" + x_String + ", " + y_String + ") STRENGTH: " +  my_String, xpos, FRAME_HEIGHT - ypos - (int) cellHeight);
+	}
 	public void drawArc(Graphics g, int xInd, int yInd, Color inColor,
 			boolean fill) {
 
@@ -159,7 +222,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	}
 	
 	public void drawOval(Graphics g, FMTBlob blob, Color inColor, boolean fill) {
-		int xpos = (int) (blob.getBounds().x * cellWidth);
+		int xpos = (int) (blob.getBounds().x * cellWidth); 
 		int ypos = (int) (blob.getBounds().y * cellHeight);
 		g.setColor(inColor);
 		if (fill)
@@ -172,21 +235,21 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 					(int) (blob.getBounds().height * cellHeight));
 
 	}
-	
+
 	public void refresh(Graphics g){
 		g.setColor(new Color(0f, 0f, 0f, 1));
-		g.fillRect(0,0,FRAME_WIDTH, FRAME_HEIGHT);
+		g.fillRect(1024,0,316, FRAME_HEIGHT);
 	}
 
-	
-	
+
 	private List<Color> m_AvailableUserColors = new ArrayList<Color>();
 	private double m_SignalMean;
 	private double m_SignalStDev;
 	private List<FMTBlob> m_PreviousFrameBlobs;
 	public List<FMTBlob> m_TouchBlobs3 = new ArrayList<FMTBlob>();
+	public List<FMTGhost> m_Ghosts = new ArrayList<FMTGhost>();
 	private Image m_OffscreenBuffer;
-
+	
 	public void paintme(Graphics g) // The JPanel paint method we
 	// are overriding.
 	{
@@ -205,11 +268,11 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 			// m_TouchFrame = m_CurrentFrame;
 
 			g2d.setColor(new Color(0f, 0f, 0f, 0f));
-			g2d.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT); // Setting panel
+			//g2d.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT); // Setting panel
 			// background
 
-			float w = (float) FRAME_WIDTH / FMTFrame.NUM_COLS;
-			float h = (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS;
+			//float w = (float) FRAME_WIDTH / FMTFrame.NUM_COLS;
+			//float h = (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS;
 			(g2d).setStroke(new BasicStroke(5));
 			
 			
@@ -220,11 +283,12 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 							y) / FMTFrame.MAX_SIGNAL;
 					if (color > 1)
 						color = 1;
-					drawRect(g, x, y, new Color(color, color, color), true);
+                    drawRect(g, x, y, new Color(color,color,color), true);
 					drawRect(g, x, y, Color.black.darker(), false);
 				}
 			}
 			
+	
 		
 			// draw the touch points
 			// for (int i = 0; i < m_TouchFrame.m_TouchPointIdx; i++) {
@@ -372,32 +436,281 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 			// according to getGroup()
 			// This is the part to specify user's identity by drawing in different colors - Franklin
 			refresh(g);
-			if (m_TouchBlobs3.size() == 0) {
-				arrayListRed.clear();
-				arrayListGreen.clear();
+			
+			
+			/*
+			for (int i = 0; i < m_TouchBlobs3.size(); i++){
+			//	System.out.println(m_TouchBlobs3.get(i).getPreviousBlob());
+				System.out.println(m_TouchBlobs3.get(i));
+				if (m_TouchBlobs3.get(i).getPreviousBlob() != null){
+					System.out.println(m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob());
+					if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob() != null){
+						System.out.println(m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob());
+						if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob() != null){
+							if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob().getPreviousBlob() != null){
+								int red = 0;
+								int green = 0;
+								if (m_TouchBlobs3.get(i).getGroupColor() == Color.RED){
+									red = red + 1;
+								}
+								else {
+									green = green + 1;
+								}
+								
+								
+								if (m_TouchBlobs3.get(i).getPreviousBlob().getGroupColor() == Color.RED){
+									red = red + 1;
+								}
+								else {
+									green = green + 1;
+								}
+								
+								if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getGroupColor() == Color.RED){
+									red = red + 1;
+								}
+								else {
+									green = green + 1;
+								}
+								
+								if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob().getGroupColor() == Color.RED){
+									red = red + 1;
+								}
+								else {
+									green = green + 1;
+								}
+								
+								if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob().getPreviousBlob().getGroupColor() == Color.RED){
+									red = red + 1;
+								}
+								else {
+									green = green + 1;
+								}
+								
+								
+								if (red > green){
+									m_TouchBlobs3.get(i).setGroupColor(Color.RED);
+								}
+								else {
+									m_TouchBlobs3.get(i).setGroupColor(Color.GREEN);
+								}
+							}
+						}
+					}
+				}
 			}
+			*/
+			
+			/*
+			if (m_TouchBlobs3.size() == 1){
+				m_TouchBlobs3.get(0).setGroupColor(Color.RED);
+		
+			}
+			
+			if (m_TouchBlobs3.size() == 2 && m_TouchBlobs3.get(0).m_Ghosts.isEmpty()){
+				m_TouchBlobs3.get(0).setGroupColor(Color.RED);
+				m_TouchBlobs3.get(1).setGroupColor(Color.RED);
+				System.out.println("reached");
+			}
+				*/
+				/*
+				if (m_TouchBlobs3.get(i).getPreviousBlob() != null && m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob() != null && m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob() != null && m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob().getPreviousBlob() != null){
+					int red = 0;
+					int green = 0;
+					if (m_TouchBlobs3.get(i).getGroupColor() == Color.RED){
+						red = red + 1;
+					}
+					else {
+						green = green + 1;
+					}
+					
+					
+					if (m_TouchBlobs3.get(i).getPreviousBlob().getGroupColor() == Color.RED){
+						red = red + 1;
+					}
+					else {
+						green = green + 1;
+					}
+					
+					if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getGroupColor() == Color.RED){
+						red = red + 1;
+					}
+					else {
+						green = green + 1;
+					}
+					
+					if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob().getGroupColor() == Color.RED){
+						red = red + 1;
+					}
+					else {
+						green = green + 1;
+					}
+					
+					if (m_TouchBlobs3.get(i).getPreviousBlob().getPreviousBlob().getPreviousBlob().getPreviousBlob().getGroupColor() == Color.RED){
+						red = red + 1;
+					}
+					else {
+						green = green + 1;
+					}
+					
+					
+					if (red > green){
+						m_TouchBlobs3.get(i).setGroupColor(Color.RED);
+					}
+					else {
+						m_TouchBlobs3.get(i).setGroupColor(Color.GREEN);
+					}
+					
+				}*/
+			/*
+			for (FMTBlob blob: m_TouchBlobs3) {
+				for (FMTPoint point: blob.getPoints()){
+					float color = (float) m_TouchFrameAve.getSignalStrength(point.x, point.y) / FMTFrame.MAX_SIGNAL;
+					if (color > 1)
+						color = 1;
+					if (blob.getGroupColor() == Color.RED){
+						drawRect(g,point.x,point.y,new Color(color,(float) 0,(float) 0),true);
+					}
+					else if (blob.getGroupColor() == Color.GREEN){
+						drawRect(g,point.x,point.y,new Color((float) 0 ,color,(float) 0),true);
+					}
+					else if (blob.getGroupColor() == Color.BLUE){
+						drawRect(g,point.x,point.y,new Color((float) 0,(float) 0, color),true);
+					}
+					else{
+						drawRect(g,point.x,point.y,blob.getGroupColor(),true);
+					}
+				}
+			}*/
 
+			
+			for (int i = 0; i < m_LegalGhosts.size(); i++){
+				drawRect(g, (int) m_LegalGhosts.get(i).m_Rect.getCenterX(),(int) m_LegalGhosts.get(i).m_Rect.getCenterY(), Color.GREEN, true);
+				drawString(g, m_TouchFrameAve.getSignalStrength((int) m_LegalGhosts.get(i).m_Rect.getCenterX(),(int) m_LegalGhosts.get(i).m_Rect.getCenterY()),(int) m_LegalGhosts.get(i).m_Rect.getCenterX(), (int) m_LegalGhosts.get(i).m_Rect.getCenterY(), Color.GREEN, 24);
+			}
+			
+			
+			
 			for (FMTBlob blob : m_TouchBlobs3) {
+				int x = (int) blob.getBounds().getCenterX();
+				int y = (int) blob.getBounds().getCenterY();
+				drawStringGroupID(g, blob.getGroupIdx(), (int) blob.getBounds().getMaxX() + 1 , y-1, Color.RED , 24);
+				drawString(g, m_TouchFrameAve.getSignalStrength(x, y), (int) blob.getBounds().getMaxX() + 1 , y, Color.RED, 24);
+			}
+			
+			g.setColor(Color.RED);
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 24)); 
+			g.drawString("Blobs: ",(int) (41 * (float) FRAME_WIDTH / FMTFrame.NUM_COLS) , FRAME_HEIGHT - (int) (28 * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS) - (int) cellHeight);
+			for (int i = 0; i < m_TouchBlobs3.size(); i++) {
+				int x = 41;
+				int y = 27-i;
+				drawStringBlob(g, m_TouchFrameAve.getSignalStrength((int) m_TouchBlobs3.get(i).getBounds().getCenterX(),(int) m_TouchBlobs3.get(i).getBounds().getCenterY()), x , y, Color.RED, 16, i,(int) m_TouchBlobs3.get(i).getBounds().getCenterX(), (int) m_TouchBlobs3.get(i).getBounds().getCenterY());
+			}
+			g.setColor(Color.GREEN);
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 24)); 
+			g.drawString("Ghosts: ",(int) (41 * (float) FRAME_WIDTH / FMTFrame.NUM_COLS) , FRAME_HEIGHT - (int) (20 * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS) - (int) cellHeight);
+			for (int i = 0; i < m_LegalGhosts.size(); i++){
+				int x = 41;
+				int y = 19-i;
+				drawStringGhost(g, m_TouchFrameAve.getSignalStrength((int) m_LegalGhosts.get(i).m_Rect.getCenterX(),(int) m_LegalGhosts.get(i).m_Rect.getCenterY()), x, y, Color.GREEN, 16, i, (int) m_LegalGhosts.get(i).m_Rect.getCenterX(),(int) m_LegalGhosts.get(i).m_Rect.getCenterY());
+			}
+			
+			g.setColor(Color.YELLOW);
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+			g.drawString("TOUCH_THRESHOLD_2: " + Integer.toString(m_TouchFrameAve.TOUCH_THRESHOLD_2),(int) (30 * (float) FRAME_WIDTH / FMTFrame.NUM_COLS) , FRAME_HEIGHT - (int) (0 * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS) - (int) cellHeight);
+			g.drawString("TOUCH_THRESHOLD_1: " + Integer.toString(m_TouchFrameAve.TOUCH_THRESHOLD_1),(int) (30 * (float) FRAME_WIDTH / FMTFrame.NUM_COLS) , FRAME_HEIGHT - (int) (1 * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS) - (int) cellHeight);
+			
+	
+		
+			
+			
+			/*
+			for (FMTBlob blob : m_TouchBlobs3) {
+				// drawOval(g,blob,blob.getGroupColor(), true);
+				int xmin = (int) blob.getBounds().getMinX();
+				int xmax = (int) blob.getBounds().getMaxX();
+				int ymin = (int) blob.getBounds().getMinY();
+				int ymax = (int) blob.getBounds().getMaxY();
 				
-				if (m_TouchBlobs3.size() == 0){
-					arrayListRed.clear();
-					arrayListGreen.clear();
+				for (int i = 0; i < (int) blob.getBounds().getWidth(); i++){
+					for (int j = 0; j < (int) blob.getBounds().getHeight(); j++){
+						
+						int index = 0;
+						int[] xtemp = new int [10];
+						int[] ytemp = new int [10];
+						for (int k = 0; k < blob.getPoints().size(); k++){
+							if (blob.getPoints().get(k).x == xmin + i && blob.getPoints().get(k).y == ymin + j){
+								
+								xtemp[index] = xmin + i;
+								ytemp[index] = ymin + j;
+								index += 1;
+							}
+							if (blob.getPoints().get(k).x == xmin + i + 1 && blob.getPoints().get(k).y == ymin + j){
+								xtemp[index] = xmin + i + 1;
+								ytemp[index] = ymin + j;
+								index += 1;
+							}
+							if (blob.getPoints().get(k).x == xmin + i + 1 && blob.getPoints().get(k).y == ymin + j + 1){
+								xtemp[index] = xmin + i;
+								ytemp[index] = ymin + j + 1;
+								index += 1;
+							}
+							if (blob.getPoints().get(k).x == xmin + i  && blob.getPoints().get(k).y == ymin + j + 1){
+								xtemp[index] = xmin + i + 1;
+								ytemp[index] = ymin + j + 1;
+								index += 1;
+							}
+						}
+						int[] xind = new int [index];
+						int[] yind = new int [index];
+						for (int m = 0; m < index; m++){
+							xind[m] = xtemp[m];
+							yind[m] = ytemp[m];
+						}
+						if (index == 3){
+							fillPolygon(g, xind, yind, index, blob.getGroupColor());
+							
+						}
+						if (index == 4){
+							drawRect(g, xmin + i, ymin + j + 1, blob.getGroupColor(), true);
+						}
+					}
 				}
 				
-			 
-				//arrayListGreen.clear();
-			
-				// drawOval(g,blob,blob.getGroupColor(), true);
-				finished:
+				
 				for (FMTPoint point : blob.getPoints()) {
 					//drawArc(g, point.x, point.y, blob.getGroupColor(), false);
-					SavedPositionData tempPosition = new SavedPositionData(point.x, point.y , blob.getGroupColor());
+				    
 					
+					//if (m_TouchBlobs3.size() == 2 && blob.m_Ghosts == null){
+					//	drawArc(g, point.x, point.y, Color.RED, false);
+					//}
+					//if(blob.getPreviousBlob() != null && blob.getPreviousBlob().getPreviousBlob() != null && blob.getPreviousBlob().getPreviousBlob().getPreviousBlob() != null && blob.getPreviousBlob().getPreviousBlob().getPreviousBlob().getPreviousBlob() != null) {
+					//	drawArc(g, point.x, point.y, blob.getGroupColor(), false);
+					//}
+					//if(m_TouchBlobs3.size() == 1){
+					//	drawArc(g, point.x, point.y, Color.RED, false);
+					//}
+					//if (!m_TouchBlobs3.get(1).m_Ghosts.isEmpty() && m_TouchBlobs3.size() == 2){
+					//	if (arrayListGreen.size() < 80){
+					//		arrayListGreen.add(tempPosition);
+					//	}
+					//	else{
+					//		arrayListGreen.remove(0);
+					//		arrayListGreen.add(tempPosition);
+					//	}
+					//	for (int i = 0; i < arrayListRed.size(); i++){
+					//		drawArc(g, arrayListGreen.get(i).x, arrayListGreen.get(i).y, arrayListGreen.get(i).groupColor, false);
+					//	}
+						
+					//	continue finished;
+						
+						
+					//}
+					/*
 					if(tempPosition.groupColor == Color.RED){
-						
 						boolean checkFlag1 = false ;
-						if (arrayListRed.size() >= 80){
-							for (int j = 60; j < 80; j++){
+						if (arrayListRed.size() >= 10){
+							for (int j = 0; j < 10; j++){
 								if(arrayListRed.get(j).x - tempPosition.x <= 2 && arrayListRed.get(j).x - tempPosition.x >= -2){
 									if(arrayListRed.get(j).y - tempPosition.y <= 2 && arrayListRed.get(j).y - tempPosition.y >= -2){
 										checkFlag1 = true;
@@ -409,7 +722,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 								
 								tempPosition.setColor(Color.GREEN);
 								
-								if (arrayListGreen.size() < 80){
+								if (arrayListGreen.size() < 10){
 									arrayListGreen.add(tempPosition);
 								}
 								else{
@@ -417,42 +730,8 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 									arrayListGreen.add(tempPosition);
 								}
 								for (int i = 0; i < arrayListGreen.size(); i++){
-									if(flag_1){
-										drawLine(g, tempGreenx, tempGreeny, arrayListGreen.get(i).x, arrayListGreen.get(i).y, arrayListGreen.get(i).groupColor);
-									}
-									flag_1 = true;
-									tempGreenx = arrayListGreen.get(i).x;
-									tempGreeny = arrayListGreen.get(i).y;
-							
-								}
-								flag_1 = false;
-								tempGreenx = 0;
-								tempGreeny = 0;
-								continue finished;
-							}
-						}
-						else if(arrayListRed.size() > 10 && arrayListRed.size() < 80){
-							for (int j = arrayListRed.size() - 10; j < arrayListRed.size(); j++){
-								if(arrayListRed.get(j).x - tempPosition.x <= 2 && arrayListRed.get(j).x - tempPosition.x >= -2){
-									if(arrayListRed.get(j).y - tempPosition.y <= 2 && arrayListRed.get(j).y - tempPosition.y >= -2){
-										checkFlag1 = true;
-									}
-								}
-							}
-							// if it is wrong
-							if (checkFlag1 == false){
-								
-								tempPosition.setColor(Color.GREEN);
-								
-								if (arrayListGreen.size() < 80){
-									arrayListGreen.add(tempPosition);
-								}
-								else{
-									arrayListGreen.remove(0);
-									arrayListGreen.add(tempPosition);
-								}
-								for (int i = 0; i < arrayListGreen.size(); i++){
-									if(flag_1){
+									if(arrayListGreen.size() >= 10 && flag_1){
+										//drawArc(g, arrayListGreen.get(i).x, arrayListGreen.get(i).y, arrayListGreen.get(i).groupColor, false);
 										drawLine(g, tempGreenx, tempGreeny, arrayListGreen.get(i).x, arrayListGreen.get(i).y, arrayListGreen.get(i).groupColor);
 									}
 									flag_1 = true;
@@ -468,7 +747,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 						}
 						
 						
-						if (arrayListRed.size() < 80){
+						if (arrayListRed.size() < 10){
 							arrayListRed.add(tempPosition);
 						}
 						else{
@@ -476,7 +755,8 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 							arrayListRed.add(tempPosition);
 						}
 						for (int i = 0; i < arrayListRed.size(); i++){
-							if(flag_0){
+							if(arrayListRed.size() >= 10 && flag_0){
+								//drawArc(g, arrayListRed.get(i).x, arrayListRed.get(i).y, arrayListRed.get(i).groupColor, false);
 								drawLine(g, arrayListRed.get(i).x, arrayListRed.get(i).y,tempRedx, tempRedy, arrayListRed.get(i).groupColor);
 							}
 							
@@ -495,8 +775,8 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 					else if(tempPosition.groupColor == Color.GREEN){
 						
 						boolean checkFlag2 = false ;
-						if (arrayListGreen.size() >= 80){
-							for (int j = 60; j < 80; j++){
+						if (arrayListGreen.size() >= 10){
+							for (int j = 0; j < 10; j++){
 								if(arrayListGreen.get(j).x - tempPosition.x <= 2 && arrayListGreen.get(j).x - tempPosition.x >= -2){
 									if(arrayListGreen.get(j).y - tempPosition.y <= 2 && arrayListGreen.get(j).y - tempPosition.y >= -2){
 										checkFlag2 = true;
@@ -506,7 +786,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 							if (checkFlag2 == false){
 								tempPosition.setColor(Color.RED);
 								
-								if (arrayListRed.size() < 80){
+								if (arrayListRed.size() < 10){
 									arrayListRed.add(tempPosition);
 								}
 								else{
@@ -514,7 +794,8 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 									arrayListRed.add(tempPosition);
 								}
 								for (int i = 0; i < arrayListRed.size(); i++){
-									if(flag_0){
+									if(arrayListRed.size() >= 10 && flag_0){
+										//drawArc(g, arrayListRed.get(i).x, arrayListRed.get(i).y, arrayListRed.get(i).groupColor, false);
 										drawLine(g, arrayListRed.get(i).x, arrayListRed.get(i).y,tempRedx, tempRedy, arrayListRed.get(i).groupColor);
 									}
 									
@@ -534,44 +815,8 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 							
 							
 						}
-						else if (arrayListGreen.size() < 80 && arrayListGreen.size() > 10){
-							for (int j = arrayListGreen.size() - 10; j < arrayListGreen.size(); j++){
-								if(arrayListGreen.get(j).x - tempPosition.x <= 2 && arrayListGreen.get(j).x - tempPosition.x >= -2){
-									if(arrayListGreen.get(j).y - tempPosition.y <= 2 && arrayListGreen.get(j).y - tempPosition.y >= -2){
-										checkFlag2 = true;
-									}
-								}
-							}
-							if (checkFlag2 == false){
-								tempPosition.setColor(Color.RED);
-								
-								if (arrayListRed.size() < 80){
-									arrayListRed.add(tempPosition);
-								}
-								else{
-									arrayListRed.remove(0);
-									arrayListRed.add(tempPosition);
-								}
-								for (int i = 0; i < arrayListRed.size(); i++){
-									if(flag_0){
-										drawLine(g, arrayListRed.get(i).x, arrayListRed.get(i).y,tempRedx, tempRedy, arrayListRed.get(i).groupColor);
-									}
-									
-									flag_0 = true;
-									tempRedx = arrayListRed.get(i).x;
-									tempRedy = arrayListRed.get(i).y;
-							
-								}
-								
-								flag_0 = false;
-								
-								tempRedx = 0;
-								tempRedy = 0;
-								continue finished;
-							}
-							
-						}
-						if (arrayListGreen.size() < 80){
+					
+						if (arrayListGreen.size() < 10){
 							arrayListGreen.add(tempPosition);
 						}
 						else{
@@ -579,7 +824,8 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 							arrayListGreen.add(tempPosition);
 						}
 						for (int i = 0; i < arrayListGreen.size(); i++){
-							if(flag_1){
+							if(arrayListGreen.size() >= 10 && flag_1){
+								//drawArc(g, arrayListGreen.get(i).x, arrayListGreen.get(i).y, arrayListGreen.get(i).groupColor, false);
 								drawLine(g, tempGreenx, tempGreeny, arrayListGreen.get(i).x, arrayListGreen.get(i).y, arrayListGreen.get(i).groupColor);
 							}
 							flag_1 = true;
@@ -595,9 +841,11 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 				
 				
 				
+				}
+								
 				
 				 //m_TouchFrameAveTemp.clearTouchPoints();
-			}
+			} */
 
 			//arrayListRed.clear();
 			//arrayListGreen.clear();
@@ -637,7 +885,6 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	}
 
 	public void run() {
-
 		panel = new Panel() {
 			private static final long serialVersionUID = 4269337316975195152L;
 
@@ -664,7 +911,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 			}
 
 		};
-		panel.setPreferredSize(new Dimension(1024, 768)); // Setting the panel
+		panel.setPreferredSize(new Dimension(1340, 768)); // Setting the panel
 															// size
 
 		getContentPane().add(panel); // Adding panel to frame.
@@ -680,6 +927,8 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	List<FMTGhost> m_LegalGhosts = new ArrayList<FMTGhost>();
 	private double m_SameGroupLastFrameScalar = .5d;
 
+
+	
 	@SuppressWarnings("unchecked")
 	public void sim(FMTFrame inFrame) {
 
@@ -1168,7 +1417,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 							// case.
 	}
 
-	int frameCount = 0;
+	int frameCount = 0;          
 	boolean m_AreTouches = false;
 	private boolean m_CaptureBackground = true; // when true we capture stats on the background noise
 	private UIDControlListener m_UIDListener;
@@ -1282,8 +1531,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	public void onShadowScalarUpdate(double in) {
 		m_ShadowScalar = in;
 	}
-	
-	@Override
+ 	@Override
 	public void onSameGroupLastFrameScalarUpdate(double in){
 		m_SameGroupLastFrameScalar = in;
 	}

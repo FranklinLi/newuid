@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FMTBlob {
-	
+
 	public Color m_GroupColor = null;
 	public int m_GroupIdx = -1;
 	
@@ -48,7 +48,7 @@ public class FMTBlob {
 		}
 		
 		return blob2;
-	}
+	} 
 	
 	public Color getGroupColor(){
 		return m_GroupColor;

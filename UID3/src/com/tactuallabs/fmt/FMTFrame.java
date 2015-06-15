@@ -8,10 +8,10 @@ import java.util.List;
 public class FMTFrame {
 	static long MAX_SIGNAL = 100000; //10000000
 	static int MAX_TOUCH_STRENGTH = 4;
-	static int TOUCH_THRESHOLD_1 = 3600000; // TODO adjust this value inteligently
-	static int TOUCH_THRESHOLD_2 = 3400000;
-//	static int TOUCH_THRESHOLD_1 = 1200000;
-//	static int TOUCH_THRESHOLD_2 = 800000;	
+	static int TOUCH_THRESHOLD_1 = 2600000; // TODO adjust this value inteligently
+	static int TOUCH_THRESHOLD_2 = 2400000;
+	//static int TOUCH_THRESHOLD_1 = 1200000;
+	//static int TOUCH_THRESHOLD_2 = 1000000;	
 	static final int NUM_COLS = 40;
 	static final int NUM_ROWS = 30;
 	static final int NUM_SIGNALS = NUM_COLS*NUM_ROWS;
@@ -21,7 +21,7 @@ public class FMTFrame {
 	int[] m_TouchPointStrengths = new int[64];
 	int m_TouchPointIdx = 0;
 	int m_NumFramesAveraged = 0;
-	
+	 
 	public String getSignalsAsString(){
 		String s = "";
 		for(int row = 0;row<NUM_ROWS;row++){
@@ -54,7 +54,7 @@ public class FMTFrame {
 			FMTPoint point = m_PointsToConsider.remove(0);
 			
 			// if the point is below threshold, continue to the next point
-			if(m_SignalStrengthsMax[point.x][point.y] < TOUCH_THRESHOLD_1)
+			if(m_SignalStrengths[point.x][point.y] < TOUCH_THRESHOLD_1)
 				continue ted;
 			
 			// check if it's next to an existing blob
@@ -64,7 +64,8 @@ public class FMTFrame {
 					continue ted;
 				}
 			}
-			
+			System.out.println(m_SignalStrengthsMax[point.x][point.y]);
+			System.out.println(m_SignalStrengths[point.x][point.y]);
 			// this point is above threshold, and not next to a blob, so make a new blob and add this point
 			FMTBlob blob = new FMTBlob();
 			blob.addPoint(point);
@@ -83,7 +84,7 @@ public class FMTFrame {
 			FMTPoint point = m_PointsToConsider.remove(0);
 			
 			// if the point is below threshold, continue to the next point
-			if(m_SignalStrengthsMax[point.x][point.y] < TOUCH_THRESHOLD_2)
+			if(m_SignalStrengths[point.x][point.y] < TOUCH_THRESHOLD_2)
 				continue ted;
 			
 			// check if it's next to an existing blob
@@ -96,7 +97,7 @@ public class FMTFrame {
 			
 			// DO NOT MAKE NEW BLOBS IN THIS SECOND PASS!
 		}
-		
+		 
 		// combine overlapping blobs
 		ted:
 		while(touchBlobs.size() > 0){
@@ -148,6 +149,7 @@ public class FMTFrame {
 		if(MAX_TOUCH_STRENGTH < z)
 			MAX_TOUCH_STRENGTH = z;
 	}
+
 
 //	public void setSignalValue(int idx, int val) {
 //		m_Signals[idx] = val;

@@ -18,13 +18,17 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException; 
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.Timer;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import com.aliasi.cluster.CompleteLinkClusterer;
 import com.aliasi.cluster.Dendrogram;
@@ -65,6 +69,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 		}
 	}
 	
+	
 	ArrayList<SavedPositionData> arrayListRed = new ArrayList<SavedPositionData>();
 	ArrayList<SavedPositionData> arrayListGreen = new ArrayList<SavedPositionData>();
 	ArrayList<SavedPositionData> arrayListBlue = new ArrayList<SavedPositionData>();
@@ -90,9 +95,11 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	int m_FrameCount = 0;
 	boolean flag_0 = false;
 	boolean flag_1 = false;
+	boolean flagrecord1 = false;
+	boolean flagrecord2 = false;
 	static final int RENDER_TIME_MS = 1000 / 60;
 	static final int FRAMES_BETWEEN_FPS_MEASUREMENTS = 1000 / RENDER_TIME_MS * 5;
-
+	
 	public FMTCheckerboardFrame() {
 		super();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -117,7 +124,6 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	private int m_NumCapturedTouchSignals = 0;
 	private final static int MAX_CAPTURED_SIGNALS = 3000;
 	private long[][][] m_CapturedSignals = new long[MAX_CAPTURED_SIGNALS][FMTFrame.NUM_COLS][FMTFrame.NUM_ROWS];
-
 	public void drawRect(Graphics g, int xInd, int yInd, Color inColor,
 			boolean fill) {
 
@@ -249,6 +255,68 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 	public List<FMTBlob> m_TouchBlobs3 = new ArrayList<FMTBlob>();
 	public List<FMTGhost> m_Ghosts = new ArrayList<FMTGhost>();
 	private Image m_OffscreenBuffer;
+	public static FileWriter fw;
+	public static PrintWriter out;
+	public void outputtocsv() throws IOException{
+		out.print("Time");
+		out.print(",");
+		out.print("XPosition");
+		out.print(",");
+		out.print("YPosition");
+		out.print(",");
+		out.print("Strength");
+		out.print(",");
+		out.print("Color");
+		out.print(",");
+		out.println("GroupID");
+		out.flush();
+	}
+	
+	public void outputiteration() throws IOException{
+		for (FMTBlob blob : m_TouchBlobs3){
+			int xcen = (int) (blob.getBounds().getCenterX() * (float) FRAME_WIDTH / FMTFrame.NUM_COLS);
+			int ycen = (int) (blob.getBounds().getCenterY() * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS);
+			long strength = m_TouchFrameAve.getSignalStrength((int) blob.getBounds().getCenterX(), (int) blob.getBounds().getCenterY());
+			Color color = blob.getGroupColor();
+			int GroupID = blob.getGroupIdx();
+			long m_Time = System.currentTimeMillis();
+			String string_time = Long.toString(m_Time);
+			String string_strength = Long.toString(strength);
+			out.print(string_time);
+			out.print(",");
+			out.print(xcen);
+			out.print(",");
+			out.print(FRAME_HEIGHT - ycen - (int) cellHeight);
+			out.print(",");
+			out.print(string_strength);
+			out.print(",");
+			if (color == Color.RED){
+				out.print("RED");
+			}
+			else if(color == Color.GREEN){
+				out.print("GREEN");
+			}
+			else if(color == Color.BLUE){
+				out.print("BLUE");
+			}
+			else if(color == Color.YELLOW){
+				out.print("YELLOW");
+			}
+			else if(color == Color.CYAN){
+				out.print("CYAN");
+			}
+			else if(color == Color.WHITE){
+				out.print("WHITE");
+			}
+			out.print(",");
+			out.println(GroupID);
+
+		}
+		
+		out.flush();
+	}	
+		
+	
 	
 	public void paintme(Graphics g) // The JPanel paint method we
 	// are overriding.
@@ -288,7 +356,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 				}
 			}
 			
-	
+			
 		
 			// draw the touch points
 			// for (int i = 0; i < m_TouchFrame.m_TouchPointIdx; i++) {
@@ -619,7 +687,144 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 			g.drawString("TOUCH_THRESHOLD_2: " + Integer.toString(m_TouchFrameAve.TOUCH_THRESHOLD_2),(int) (30 * (float) FRAME_WIDTH / FMTFrame.NUM_COLS) , FRAME_HEIGHT - (int) (0 * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS) - (int) cellHeight);
 			g.drawString("TOUCH_THRESHOLD_1: " + Integer.toString(m_TouchFrameAve.TOUCH_THRESHOLD_1),(int) (30 * (float) FRAME_WIDTH / FMTFrame.NUM_COLS) , FRAME_HEIGHT - (int) (1 * (float) FRAME_HEIGHT / FMTFrame.NUM_ROWS) - (int) cellHeight);
 			
-	
+			for (FMTBlob blob : m_TouchBlobs3){
+				List<FMTPoint> m_Point = new ArrayList<FMTPoint>();
+				int xmax = (int) blob.getBounds().getMaxX();
+				int xmin = (int) blob.getBounds().getMinX();
+				int ymax = (int) blob.getBounds().getMaxY();
+				int ymin = (int) blob.getBounds().getMinY();
+				
+				
+				for (int i = 0; i < ymax - ymin ; i++){
+					boolean flag2 = false;
+					for (FMTPoint point : blob.getPoints()){
+						if(point.x == xmin && point.y == ymin + i){
+							if (m_Point.contains(point) == false){
+									m_Point.add(point);
+									flag2 = true;
+							}
+						}
+					}
+					boolean flag3 = false;
+					if (flag2 == false && flag3 == false){
+						for(int j = 0; j < xmax - xmin ; j++){ 
+							for (FMTPoint point : blob.getPoints()){
+								if (point.x == xmin + j && point.y == ymin + i){
+									if (m_Point.contains(point) == false){
+										m_Point.add(point);
+										flag3 = true;
+										
+									}
+								}
+							}
+						}
+					}
+				}
+				
+				for (int i = 0; i < xmax - xmin; i++){
+					boolean flag2 = false;
+					for (FMTPoint point : blob.getPoints()){
+						if(point.x == xmin + i && point.y == ymax){
+							if (m_Point.contains(point) == false){
+								m_Point.add(point);
+								flag2 = true;
+							}
+						}
+					}
+					boolean flag3 = false;
+					if (flag2 == false && flag3 == false){
+						for(int j = 0; j < ymax - ymin ; j++){ 
+							for (FMTPoint point : blob.getPoints()){
+								if (point.x == xmin + i && point.y == ymax - j){
+									if (m_Point.contains(point) == false){
+										m_Point.add(point);
+										flag3 = true;
+									}
+								}
+							}
+						}
+					}
+				}
+				
+				for (int i = 0; i < ymax - ymin; i++){
+					boolean flag2 = false;
+					for (FMTPoint point : blob.getPoints()){
+						if(point.x == xmax && point.y == ymax - i){
+							if (m_Point.contains(point) == false){
+								FMTPoint newpoint = new FMTPoint(point.x + 1, point.y);
+								FMTPoint newpoint2 = new FMTPoint(point.x + 1, point.y - 1);
+								m_Point.add(newpoint);
+								m_Point.add(newpoint2);
+								flag2 = true;
+							}
+						}
+					}
+				    boolean flag3 = false;
+					if (flag2 == false && flag3 == false){
+						for(int j = 0; j < xmax - xmin ; j++){ 
+							for (FMTPoint point : blob.getPoints()){
+								if (point.x == xmax - j && point.y == ymax - i){
+									if (m_Point.contains(point) == false){
+										FMTPoint newpoint = new FMTPoint(point.x + 1, point.y);
+										FMTPoint newpoint2 = new FMTPoint(point.x + 1, point.y - 1);
+										m_Point.add(newpoint);
+										m_Point.add(newpoint2);
+										flag3 = true;
+									}
+								}
+							}
+						}
+					}
+				}
+				
+				for (int i = 0; i < xmax - xmin; i++){
+					boolean flag2 = false;
+					for (FMTPoint point : blob.getPoints()){
+						if(point.x == xmax - i && point.y == ymin){
+							if (m_Point.contains(point) == false){
+								FMTPoint newpoint = new FMTPoint(point.x + 1, point.y - 1);
+								FMTPoint newpoint2 = new FMTPoint(point.x, point.y - 1);
+								m_Point.add(newpoint);
+								m_Point.add(newpoint2);
+								if (point.x == xmin + 1 && point.y == ymin){
+									FMTPoint newpoint3 = new FMTPoint(point.x - 1, point.y - 1);
+									m_Point.add(newpoint3);
+								}
+								flag2 = true;
+							}
+						}
+					}
+					boolean flag3 = false;
+					if (flag2 == false && flag3 == false){
+						for(int j = 0; j < ymax - ymin ; j++){ 
+							for (FMTPoint point : blob.getPoints()){
+								if (point.x == xmax - i && point.y == ymin + i){
+									if (m_Point.contains(point) == false){
+										FMTPoint newpoint = new FMTPoint(point.x + 1, point.y - 1);
+										FMTPoint newpoint2 = new FMTPoint(point.x, point.y - 1);
+										m_Point.add(newpoint);
+										m_Point.add(newpoint2);
+										flag3 = true;
+									 }
+								}
+							}
+						}
+					}
+				}
+				 
+				
+				for (int i = 0; i < m_Point.size() - 1; i++){
+					drawLine(g, m_Point.get(i).x, m_Point.get(i).y, m_Point.get(i+1).x, m_Point.get(i+1).y, Color.RED);
+				}
+				if (m_Point.size() > 1){
+					drawLine(g,m_Point.get(0).x, m_Point.get(0).y, m_Point.get(m_Point.size() - 1).x, m_Point.get(m_Point.size() - 1).y, Color.RED );
+				}
+				
+				
+				
+			} 
+			
+			
 		
 			
 			
@@ -884,7 +1089,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 
 	}
 
-	public void run() {
+	public void run()  {
 		panel = new Panel() {
 			private static final long serialVersionUID = 4269337316975195152L;
 
@@ -912,13 +1117,45 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 
 		};
 		panel.setPreferredSize(new Dimension(1340, 768)); // Setting the panel
-															// size
-
+		
+		JFrame f = new JFrame("Click me");
+		f.setVisible(true);
+		JButton b1 = new JButton("Click me");
+		f.add(b1);
+		
+		b1.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				System.out.println("You are lucky!");
+			}
+		});
+		
+		
+		
+		
+		
+		
+		try {
+			fw = new FileWriter("DataOut.csv");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}													// size
+		
+		
+		out = new PrintWriter(fw);
+		
+		try {
+			outputtocsv();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		getContentPane().add(panel); // Adding panel to frame.
 		pack();
 		setVisible(true);
 		timer.start(); // This starts the animation.
-
+		
 		Thread UDPThread = new Thread(new UDPHandler(this));
 		UDPThread.start();
 
@@ -1448,6 +1685,15 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 				}
 				sim(m_TouchFrameAve);
 				paintme(m_OffscreenBuffer.getGraphics());
+				
+				
+				
+				try {
+					outputiteration();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			frameCount = 0;
 			m_AreTouches = false;
@@ -1543,7 +1789,7 @@ public class FMTCheckerboardFrame extends JFrame implements ActionListener,
 
 	@Override
 	public void onThresh2Update(int in) {
-		FMTFrame.TOUCH_THRESHOLD_1 = in;
+		FMTFrame.TOUCH_THRESHOLD_2 = in;
 	}
 
 	@Override

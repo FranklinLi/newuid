@@ -156,10 +156,10 @@ private int get2ByteInt(byte[] data, int offset) {
 			        // Reset the length of the packet before reusing it.
 			        packet.setLength(buffer.length);
 			      }
+			   
 			    } catch (Exception e) {
 			      System.err.println(e);
 			      e.printStackTrace();
 			    }
-		
 	}
 }
